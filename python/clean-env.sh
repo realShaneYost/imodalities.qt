@@ -4,8 +4,7 @@ set -e
 cd "$(dirname "$0")"
 
 if [[ "$VIRTUAL_ENV" != "" ]]; then
-  echo "✅ Deactivating virtual environment..."
-  deactivate || true
+  echo "⚠️ Subshell limitation, <deactivate> on complete!"
 fi
 
 if [[ -d "venv" ]]; then

@@ -19,32 +19,32 @@ class MainWindow(QtWidgets.QMainWindow):
 
   def start_task(self):
     progress_dialog = ProgressDialog(parent=self)
-    progress_dialog.setWindowModality(QtCore.Qt.WindowModal)
     percent_complete = 0
     ticker = QtCore.QTimer(interval=15)
 
     # My little worker simulation
     def do_one_unit_of_work():
       nonlocal percent_complete
-      percent_complete += 1
-      progress_dialog.set_step_progress(percent_complete)
+      if not progress_dialog:
+        ticker.stop()
+        return
+      percent_complete +=1
+      progress_dialog.set_progress(percent_complete)
       if percent_complete >= 100:
         ticker.stop()
+
     ticker.timeout.connect(do_one_unit_of_work)
     ticker.start()
 
     # Handlers to the signals that accept/reject emit
-    def close_cancel():
-      progress_dialog.active = False
+    def on_rejected():
       if ticker.isActive():
         ticker.stop()
-      print(f"Task canceled, progress_dialog.active: {progress_dialog.active}")
+      print(f"Task canceled")
 
-    def close_done():
-      progress_dialog.active = False
-      print(f"Task complete, progress_dialog.active: {progress_dialog.active}")
+    def on_accepted():
+      print(f"Task complete")
 
-    progress_dialog.rejected.connect(close_cancel)
-    progress_dialog.accepted.connect(close_done)
-    progress_dialog.active = True
+    progress_dialog.rejected.connect(on_rejected)
+    progress_dialog.accepted.connect(on_accepted)
     progress_dialog.show()

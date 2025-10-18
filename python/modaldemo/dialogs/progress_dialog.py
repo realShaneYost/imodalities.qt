@@ -1,13 +1,16 @@
-from PySide6 import QtWidgets
+from PySide6 import QtWidgets, QtCore
 
 class ProgressDialog(QtWidgets.QDialog):
   def __init__(self, parent=None, width=420, height=140, show_buttons=True):
     super().__init__(parent)
 
     self.setWindowTitle("Working...")
-    self.setModal(True)  # Modal dialog using show() not exec() (qt docs recommended approach)
     self.resize(width, height)
-    self.active = False
+
+    # This is not practical and it is unsafe but if you wanted to see the behavior of modeless you
+    # can comment out this line.
+    self.setWindowModality(QtCore.Qt.WindowModal)
+
     self.show_buttons = show_buttons
 
     self.overall_label = QtWidgets.QLabel("Working…", self)
@@ -33,7 +36,7 @@ class ProgressDialog(QtWidgets.QDialog):
       buttons_layout.addWidget(self.done_button)
       layout.addLayout(buttons_layout)
 
-  def set_step_progress(self, pct: int) -> None:
+  def set_progress(self, pct: int) -> None:
     # bounds check
     if pct < 0:
       pct = 0
@@ -47,6 +50,7 @@ class ProgressDialog(QtWidgets.QDialog):
         self.done_button.setEnabled(True)
       # automatically close if no buttons are shown
       else:
-        self.accept()
+        # small dwell so user sees completion
+        QtCore.QTimer.singleShot(400, self.accept)
     else:
       self.overall_label.setText("Working…")
