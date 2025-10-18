@@ -1,0 +1,32 @@
+# General
+.DS_Store
+*.swp
+*.swo
+*.bak
+*.tmp
+*.log
+
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+python/venv/
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+
+# Build artifacts
+python/build/
+python/dist/
+python/*.egg-info/
+*.egg
+*.egg-info/
+
+# OS-specific
+Thumbs.db
+ehthumbs.db
+Icon?
