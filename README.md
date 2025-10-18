@@ -1,4 +1,4 @@
 # Modal vs Modeless Dialogs
 
-Small collection of Qt applications that implement both a modal and modeless dialog. Projects
-contain an ideal build environment to extend/replicate if needed.
+Simple yet practical implementation of a modal dialog. Project contains a practical packaging build
+system to extend/reuse later if I want.
