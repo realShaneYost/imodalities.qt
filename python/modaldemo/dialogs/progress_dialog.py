@@ -7,11 +7,12 @@ class ProgressDialog(QtWidgets.QDialog):
     self.setWindowTitle("Working...")
     self.resize(width, height)
 
-    # This is not practical and it is unsafe but if you wanted to see the behavior of modeless you
-    # can comment out this line.
-    self.setWindowModality(QtCore.Qt.WindowModal)
-
     self.show_buttons = show_buttons
+
+    # Set callbacks in the owner (E.g. MainWindow). Callbacks are for handling behavior only after
+    # the buttons cancel/done have been invoked. Practical for modal based dialogs.
+    self.on_cancel_callback = None
+    self.on_done_callback = None
 
     self.overall_label = QtWidgets.QLabel("Working…", self)
     self.progress_bar = QtWidgets.QProgressBar(self)
@@ -23,7 +24,7 @@ class ProgressDialog(QtWidgets.QDialog):
     layout.addWidget(self.progress_bar)
 
     if self.show_buttons:
-      # Call accept/reject methods automatically calls hide() and emits signals accepted/rejected
+      self.setWindowModality(QtCore.Qt.WindowModal)
       self.done_button = QtWidgets.QPushButton("Done", self)
       self.done_button.setEnabled(False)
       self.done_button.clicked.connect(self.accept)
@@ -35,6 +36,28 @@ class ProgressDialog(QtWidgets.QDialog):
       buttons_layout.addWidget(self.cancel_button)
       buttons_layout.addWidget(self.done_button)
       layout.addLayout(buttons_layout)
+
+  def accept(self):
+      try:
+        if self.on_done_callback:
+          self.on_done_callback()
+      finally:
+        super().accept()
+        self.on_done_callback = None
+
+  def reject(self):
+      try:
+        if self.on_cancel_callback:
+          self.on_cancel_callback()
+      finally:
+        super().reject()
+        self.on_cancel_callback = None
+
+  def reset(self):
+    self.progress_bar.setValue(0)
+    self.overall_label.setText("Working…")
+    if self.show_buttons:
+      self.done_button.setEnabled(False)
 
   def set_progress(self, pct: int) -> None:
     # bounds check

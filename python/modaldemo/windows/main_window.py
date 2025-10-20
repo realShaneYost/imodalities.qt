@@ -7,6 +7,12 @@ class MainWindow(QtWidgets.QMainWindow):
     self.setWindowTitle("My App")
     self.resize(520, 240)
 
+    self.progress_dialog = ProgressDialog(parent=self)
+    self.percent_complete = 0
+
+    self.ticker = QtCore.QTimer(interval=15)
+    self.ticker.timeout.connect(self.do_one_unit_of_work)
+
     run_button = QtWidgets.QPushButton("Run Task")
     run_button.clicked.connect(self.start_task)
 
@@ -18,33 +24,25 @@ class MainWindow(QtWidgets.QMainWindow):
     self.setCentralWidget(central)
 
   def start_task(self):
-    progress_dialog = ProgressDialog(parent=self)
-    percent_complete = 0
-    ticker = QtCore.QTimer(interval=15)
+    # Set callbacks in the task itself to support new callbacks (if required)
+    self.progress_dialog.on_cancel_callback = self.on_cancel_callback
+    self.progress_dialog.on_done_callback = self.on_done_callback
 
-    # My little worker simulation
-    def do_one_unit_of_work():
-      nonlocal percent_complete
-      if not progress_dialog:
-        ticker.stop()
-        return
-      percent_complete +=1
-      progress_dialog.set_progress(percent_complete)
-      if percent_complete >= 100:
-        ticker.stop()
+    self.percent_complete = 0
+    self.progress_dialog.reset()
+    self.progress_dialog.show()
+    self.ticker.start()
 
-    ticker.timeout.connect(do_one_unit_of_work)
-    ticker.start()
+  def do_one_unit_of_work(self):
+    self.percent_complete +=1
+    self.progress_dialog.set_progress(self.percent_complete)
+    if self.percent_complete >= 100:
+      self.ticker.stop()
 
-    # Handlers to the signals that accept/reject emit
-    def on_rejected():
-      if ticker.isActive():
-        ticker.stop()
-      print(f"Task canceled")
+  def on_cancel_callback(self):
+    if self.ticker.isActive():
+      self.ticker.stop()
+    print("Task canceled")
 
-    def on_accepted():
-      print(f"Task complete")
-
-    progress_dialog.rejected.connect(on_rejected)
-    progress_dialog.accepted.connect(on_accepted)
-    progress_dialog.show()
+  def on_done_callback(self):
+    print("Task complete")
